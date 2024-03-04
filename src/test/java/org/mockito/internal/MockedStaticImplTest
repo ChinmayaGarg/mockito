@@ -1,0 +1,45 @@
+package org.mockito.internal;
+
+import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+//import org.mockito.exceptions.base.MockitoFrameworkException;
+
+import static org.junit.Assert.assertEquals;
+
+class UtilityClass {
+    static String staticMethod() {
+        return "Original Value";
+    }
+
+    static void staticMethod(String input) {
+        // Method implementation
+    }
+}
+
+public class MockedStaticImplTest {
+
+    @Test
+    public void testStaticMethodStubbing() {
+        try (MockedStatic<UtilityClass> mockedStatic = Mockito.mockStatic(UtilityClass.class)) {
+            mockedStatic.when(UtilityClass::staticMethod).thenReturn("Stubbed Value");
+            assertEquals("Stubbed Value", UtilityClass.staticMethod());
+        }
+    }
+
+    @Test
+    public void testStaticMethodVerification() {
+        try (MockedStatic<UtilityClass> mockedStatic = Mockito.mockStatic(UtilityClass.class)) {
+            UtilityClass.staticMethod("input");
+            mockedStatic.verify(() -> UtilityClass.staticMethod("input"));
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testAutoClosableSupport() {
+        try (MockedStatic<UtilityClass> mockedStatic = Mockito.mockStatic(UtilityClass.class)) {
+            mockedStatic.when(UtilityClass::staticMethod).thenReturn("Stubbed Value");
+        }
+        UtilityClass.staticMethod(); // This should throw an exception since the mock is closed
+    }
+}
